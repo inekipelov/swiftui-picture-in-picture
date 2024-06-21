@@ -2,14 +2,14 @@
 //  Copyright 2022 • Sidetrack Tech Limited
 //
 
-import Pipify
+import PictureInPicture
 import SwiftUI
 
 struct BasicExample: View {
     @State var mode: Int = 0
     @State var counter: Int = 0
     
-    @EnvironmentObject var controller: PipifyController
+    @EnvironmentObject var controller: PictureInPictureController
     
     var body: some View {
         Group {
@@ -36,7 +36,7 @@ struct BasicExample: View {
         .task {
             await updateCounter()
         }
-        .onPipPlayPause { isPlaying in
+        .onPictureInPicturePlayPause { isPlaying in
             print("Playback \(isPlaying ? "is playing" : "is not playing")")
         }
     }

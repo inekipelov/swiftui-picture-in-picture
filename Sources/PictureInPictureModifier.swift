@@ -4,9 +4,9 @@
 
 import SwiftUI
 
-internal struct PipifyModifier<PipView: View>: ViewModifier {
+internal struct PictureInPictureModifier<PipView: View>: ViewModifier {
     @Binding var isPresented: Bool
-    @ObservedObject var controller: PipifyController
+    @ObservedObject var controller: PictureInPictureController
     let pipContent: () -> PipView
     let offscreenRendering: Bool
     
@@ -16,7 +16,7 @@ internal struct PipifyModifier<PipView: View>: ViewModifier {
         offscreenRendering: Bool
     ) {
         self._isPresented = isPresented
-        self.controller = PipifyController(isPresented: isPresented)
+        self.controller = PictureInPictureController(isPresented: isPresented)
         self.pipContent = pipContent
         self.offscreenRendering = offscreenRendering
     }

@@ -3,7 +3,7 @@
 //
 
 import SwiftUI
-import Pipify
+import PictureInPicture
 
 struct ContentView: View {
     @State var isPresentedOne = false
@@ -13,38 +13,38 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            Text("SwiftUI Pipify")
+            Text("SwiftUI Picture in picture")
                 .font(.title)
             
             Button("Launch Basic Example") {
                 isPresentedTwo.toggle()
             }
             
-            Text("Pipify View (Tap on me!)")
+            Text("View (Tap on me!)")
                 .foregroundColor(.red)
                 .fontWeight(.medium)
                 .padding()
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(8)
-                .pipify(isPresented: $isPresentedOne)
+                .pictureInPicture(isPresented: $isPresentedOne)
                 .padding(.top)
                 .onTapGesture {
                     isPresentedOne.toggle()
                 }
             
             Button("Basic Example") { isPresentedThree.toggle() }
-                .pipify(isPresented: $isPresentedThree) {
+                .pictureInPicture(isPresented: $isPresentedThree) {
                     Text("Example Three")
                         .foregroundColor(.red)
                         .padding()
-                        .onPipSkip { _ in }
-                        .onPipPlayPause { _ in }
+                        .onPictureInPictureSkip { _ in }
+                        .onPictureInPicturePlayPause { _ in }
                 }
             
             Button("Progress Bar") { isPresentedFour.toggle() }
-                .pipify(isPresented: $isPresentedFour) { PipifyLoadingBarView() }
+                .pictureInPicture(isPresented: $isPresentedFour) { LoadingBarView() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .pipify(isPresented: $isPresentedTwo, content: BasicExample.init)
+        .pictureInPicture(isPresented: $isPresentedTwo, content: BasicExample.init)
     }
 }

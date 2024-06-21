@@ -13,11 +13,11 @@ public extension View {
     ///   - isPresented: A binding to a boolean which determines when the Picture in Picture controller should be presented.
     ///   - content: A closure which returns the view you wish to present in the Picture in Picture controller.
     @warn_unqualified_access
-    func pipify<PipView: View>(
+    func pictureInPicture<ContentView: View>(
         isPresented: Binding<Bool>,
-        content: @escaping () -> PipView
+        content: @escaping () -> ContentView
     ) -> some View {
-        modifier(PipifyModifier(
+        modifier(PictureInPictureModifier(
             isPresented: isPresented,
             pipContent: content,
             offscreenRendering: true
@@ -30,10 +30,10 @@ public extension View {
     /// - Parameters:
     ///   - isPresented: A binding to a boolean which determines when the Picture in Picture controller should be presented.
     @warn_unqualified_access
-    func pipify(
+    func pictureInPicture(
         isPresented: Binding<Bool>
     ) -> some View {
-        modifier(PipifyModifier(
+        modifier(PictureInPictureModifier(
             isPresented: isPresented,
             pipContent: { self },
             offscreenRendering: false
@@ -42,15 +42,15 @@ public extension View {
     
 }
 
-/// Makes the Pipify view modifier available to Xcode's library allowing for improved auto-complete and discoverability.
+/// Makes the picture-in-picture view modifier available to Xcode's library allowing for improved auto-complete and discoverability.
 ///
 /// Reference: https://useyourloaf.com/blog/adding-views-and-modifiers-to-the-xcode-library/
-struct PipifyLibrary: LibraryContentProvider {
+struct PictureInPictureLibrary: LibraryContentProvider {
     @State var isPresented: Bool = false
     
     @LibraryContentBuilder
     func modifiers(base: any View) -> [LibraryItem] {
-        LibraryItem(base.pipify(isPresented: $isPresented), title: "Pipify Embedded View")
-        LibraryItem(base.pipify(isPresented: $isPresented) { Text("Hello, world!") }, title: "Pipify External View")
+        LibraryItem(base.pictureInPicture(isPresented: $isPresented), title: "PictureInPicture Embedded View")
+        LibraryItem(base.pictureInPicture(isPresented: $isPresented) { Text("Hello, world!") }, title: "PictureInPicture External View")
     }
 }
