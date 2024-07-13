@@ -8,7 +8,7 @@ import AVKit
 import Combine
 import os.log
 
-public final class PictureInPictureController: NSObject, ObservableObject {
+public final class PictureInPictureEnvironment: NSObject, ObservableObject {
     
     public static var isSupported: Bool {
         AVPictureInPictureController.isPictureInPictureSupported()
@@ -156,7 +156,7 @@ public final class PictureInPictureController: NSObject, ObservableObject {
     }
 }
 
-private extension PictureInPictureController {
+private extension PictureInPictureEnvironment {
     func setupController() {
         logger.info("creating pip controller")
         
@@ -176,7 +176,7 @@ private extension PictureInPictureController {
     }
 }
 
-extension PictureInPictureController: AVPictureInPictureControllerDelegate {
+extension PictureInPictureEnvironment: AVPictureInPictureControllerDelegate {
     public func pictureInPictureControllerDidStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
         logger.info("didStart")
     }
@@ -207,7 +207,7 @@ extension PictureInPictureController: AVPictureInPictureControllerDelegate {
     }
 }
 
-extension PictureInPictureController: AVPictureInPictureSampleBufferPlaybackDelegate {
+extension PictureInPictureEnvironment: AVPictureInPictureSampleBufferPlaybackDelegate {
     public func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, setPlaying playing: Bool) {
         if isPlayPauseEnabled {
             DispatchQueue.main.async {
@@ -267,4 +267,4 @@ extension PictureInPictureController: AVPictureInPictureSampleBufferPlaybackDele
     }
 }
 
-let logger = Logger(subsystem: "com.getsidetrack.pipify", category: "Pipify")
+let logger = Logger(subsystem: "com.getsidetrack.pipify", category: "PictureInPicture")

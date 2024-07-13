@@ -10,7 +10,7 @@ public extension View {
     /// The `Bool` is true if playing, else paused.
     @warn_unqualified_access
     func onPictureInPicturePlayPause(_ playPause: @escaping (Bool) -> Void) -> some View {
-        modifier(PipifyPlayPauseModifier(closure: playPause))
+        modifier(PictureInPicturePlayPauseModifier(closure: playPause))
     }
     
     /// When the user uses the skip forward/backward button inside the picture-in-picture window, the provided closure is called.
@@ -18,13 +18,13 @@ public extension View {
     /// The `Bool` is true if forward, else backwards.
     @warn_unqualified_access
     func onPictureInPictureSkip(_ skip: @escaping (Bool) -> Void) -> some View {
-        modifier(PipifySkipModifier(closure: skip))
+        modifier(PictureInPictureSkipModifier(closure: skip))
     }
     
     /// When picture-in-picture is started, the provided closure is called.
     @warn_unqualified_access
     func onPictureInPictureStart(_ start: @escaping () -> Void) -> some View {
-        modifier(PipifyStatusModifier(closure: { newValue in
+        modifier(PictureInPictureStatusModifier(closure: { newValue in
             if newValue {
                 start()
             }
@@ -34,7 +34,7 @@ public extension View {
     /// When picture-in-picture is stopped, the provided closure is called.
     @warn_unqualified_access
     func onPictureInPictureStop(_ stop: @escaping () -> Void) -> some View {
-        modifier(PipifyStatusModifier(closure: { newValue in
+        modifier(PictureInPictureStatusModifier(closure: { newValue in
             if newValue == false {
                 stop()
             }
@@ -44,30 +44,30 @@ public extension View {
     /// When the render size of the picture-in-picture window is changed, the provided closure is called.
     @warn_unqualified_access
     func onPictureInPictureSizeChanged(_ sizeChanged: @escaping (CGSize) -> Void) -> some View {
-        modifier(PipifyRenderSizeModifier(closure: sizeChanged))
+        modifier(PictureInPictureRenderSizeModifier(closure: sizeChanged))
     }
     
     /// When the application is moved to the foreground, and if picture-in-picture is active, stop it.
     @warn_unqualified_access
     func pictureInPictureHideOnForeground() -> some View {
-        modifier(PipifyForegroundModifier())
+        modifier(PictureInPictureForegroundModifier())
     }
     
     /// When the application is moved to the background, activate picture-in-picture.
     @warn_unqualified_access
     func pictureInPictureShowOnBackground() -> some View {
-        modifier(PipifyBackgroundModifier())
+        modifier(PictureInPictureBackgroundModifier())
     }
     
     /// Provides a binding to a double whose value is used to update the progress bar in the picture-in-picture window.
     @warn_unqualified_access
     func pictureInPicture(progress: Binding<Double>) -> some View {
-        modifier(PipifyProgressModifier(progress: progress))
+        modifier(PictureInPictureProgressModifier(progress: progress))
     }
 }
 
-internal struct PipifyPlayPauseModifier: ViewModifier {
-    @EnvironmentObject var controller: PictureInPictureController
+internal struct PictureInPicturePlayPauseModifier: ViewModifier {
+    @EnvironmentObject var controller: PictureInPictureEnvironment
     let closure: (Bool) -> Void
     
     func body(content: Content) -> some View {
@@ -81,8 +81,8 @@ internal struct PipifyPlayPauseModifier: ViewModifier {
     }
 }
 
-internal struct PipifyRenderSizeModifier: ViewModifier {
-    @EnvironmentObject var controller: PictureInPictureController
+internal struct PictureInPictureRenderSizeModifier: ViewModifier {
+    @EnvironmentObject var controller: PictureInPictureEnvironment
     let closure: (CGSize) -> Void
     
     func body(content: Content) -> some View {
@@ -93,8 +93,8 @@ internal struct PipifyRenderSizeModifier: ViewModifier {
     }
 }
 
-internal struct PipifyStatusModifier: ViewModifier {
-    @EnvironmentObject var controller: PictureInPictureController
+internal struct PictureInPictureStatusModifier: ViewModifier {
+    @EnvironmentObject var controller: PictureInPictureEnvironment
     let closure: (Bool) -> Void
     
     func body(content: Content) -> some View {
@@ -105,8 +105,8 @@ internal struct PipifyStatusModifier: ViewModifier {
     }
 }
 
-internal struct PipifySkipModifier: ViewModifier {
-    @EnvironmentObject var controller: PictureInPictureController
+internal struct PictureInPictureSkipModifier: ViewModifier {
+    @EnvironmentObject var controller: PictureInPictureEnvironment
     let closure: (Bool) -> Void
     
     func body(content: Content) -> some View {
@@ -119,8 +119,8 @@ internal struct PipifySkipModifier: ViewModifier {
     }
 }
 
-internal struct PipifyBackgroundModifier: ViewModifier {
-    @EnvironmentObject var controller: PictureInPictureController
+internal struct PictureInPictureBackgroundModifier: ViewModifier {
+    @EnvironmentObject var controller: PictureInPictureEnvironment
     @Environment(\.scenePhase) var scenePhase
     
     func body(content: Content) -> some View {
@@ -133,8 +133,8 @@ internal struct PipifyBackgroundModifier: ViewModifier {
     }
 }
 
-internal struct PipifyForegroundModifier: ViewModifier {
-    @EnvironmentObject var controller: PictureInPictureController
+internal struct PictureInPictureForegroundModifier: ViewModifier {
+    @EnvironmentObject var controller: PictureInPictureEnvironment
     @Environment(\.scenePhase) var scenePhase
     
     func body(content: Content) -> some View {
@@ -147,8 +147,8 @@ internal struct PipifyForegroundModifier: ViewModifier {
     }
 }
 
-internal struct PipifyProgressModifier: ViewModifier {
-    @EnvironmentObject var controller: PictureInPictureController
+internal struct PictureInPictureProgressModifier: ViewModifier {
+    @EnvironmentObject var controller: PictureInPictureEnvironment
     @Binding var progress: Double
     
     func body(content: Content) -> some View {
