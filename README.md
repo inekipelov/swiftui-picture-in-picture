@@ -1,4 +1,4 @@
-# Pipify for SwiftUI
+# Picture in picture for SwiftUI
 
 This library introduces a new SwiftUI modifier that enables a view to be shown within a Picture in Picture overlay. This overlay
 allows information to be displayed on the screen even when the application is in the background.
@@ -15,7 +15,7 @@ to the user.
 We currently support installation through [Swift Package Manager](https://www.swift.org/package-manager/).
 
 ```
-https://github.com/getsidetrack/swiftui-pipify.git
+https://github.com/inekipelov/swiftui-picture-in-picture.git
 ```
 
 ### Project Configuration
@@ -23,17 +23,17 @@ https://github.com/getsidetrack/swiftui-pipify.git
 You will need to enable "Background Modes" in your project entitlements window. Specifically, you need the 
 `Audio, AirPlay and Picture in Picture` option to be enabled. Without this picture in picture mode cannot launch.
 
-### Pipify View
+### PictureInPicture View
 
-The "pipify view" is the view which is actually shown within the picture-in-picture window. This can either be the
-view which you add the pipify modifier to, or a completely different view.
+The "picture-in-picture view" is the view which is actually shown within the picture-in-picture window. This can either be the
+view which you add the picture-in-picture modifier to, or a completely different view.
 
-If you do not provide a custom pipify view, then we will use the view that the modifier was added to. By default this
+If you do not provide a custom picture-in-picture view, then we will use the view that the modifier was added to. By default this
 will use Apple's 'morph' transition which will animate the view into the picture-in-picture controller.
 
-When a custom pipify view is provided, we will render this offscreen which causes picture-in-picture to simply fade in.
+When a custom picture-in-picture view is provided, we will render this offscreen which causes picture-in-picture to simply fade in.
 
-Your pipify view can be any SwiftUI view, but there are some important notes to be aware of:
+Your picture-in-picture view can be any SwiftUI view, but there are some important notes to be aware of:
 
 1. This view will be rendered invisibly when created, so closures such as `task` and `onAppear` may be called when you don't expect it.
 2. Most user interactions are not supported - so buttons, tap gestures, and more will not work.
@@ -41,20 +41,20 @@ Your pipify view can be any SwiftUI view, but there are some important notes to 
 
 ### Usage
 
-Simply add the `pipify` modifier to your SwiftUI view. There are two key signatures based on whether you want to provide
-your own custom pipify view (see above).
+Simply add the `pictureInPicture` modifier to your SwiftUI view. There are two key signatures based on whether you want to provide
+your own custom PictureInPicture view (see above).
 
 ```swift
 @State var isPresented = false
 
 var body: some View {
     yourView
-        .pipify(isPresented: $isPresented) // presents `yourView` in PIP
+        .pictureInPicture(isPresented: $isPresented) // presents `yourView` in PIP
         
     // or
 
     yourView
-        .pipify(isPresented: $isPresented) {
+        .pictureInPicture(isPresented: $isPresented) {
             SomeOtherView() // presents `SomeOtherView` in PIP
         }
 }
@@ -64,13 +64,13 @@ In the example above, you can replace `yourView` with whatever you'd like to sho
 binding is what determines when to present the picture in picture window. This API is similar to Apple's own solutions for example with 
 [sheet](https://www.hackingwithswift.com/quick-start/swiftui/how-to-present-a-new-view-using-sheets).
 
-If you provide a custom SwiftUI view as your pipify view, then you may choose to add our pipify controller as an environment
+If you provide a custom SwiftUI view as your picture-in-picture view, then you may choose to add our picture-in-picture controller as an environment
 object in that separate view ("SomeOtherView" in the example code above).
 
-Note that you cannot use the EnvironmentObject in the view which specifies the pipify modifier.
+Note that you cannot use the EnvironmentObject in the view which specifies the picture-in-picture modifier.
 
 ```swift
-@EnvironmentObject var controller: PipifyController
+@EnvironmentObject var controller: PictureInPictureController
 ```
 
 This will give you access to certain variables such as the `renderSize` which returns the size of the picture-in-picture
@@ -79,8 +79,8 @@ window.
 Alternatively, you can attach our custom closures to your view to get informed about key events.
 
 ```
-yourPipifyView
-    .onPipRenderSizeChanged { size in
+yourView
+    .onPictureInPicture { size in
         // size has changed
     }
 ```
@@ -89,8 +89,8 @@ yourPipifyView
 
 ### Testing
 
-Pipify will not launch on unsupported devices and will return an error in the debug console stating that it could not launch.
-You can check whether a device is compatible by using `PipifyController.isSupported` which returns true or false. You may use
+PictureInPicture will not launch on unsupported devices and will return an error in the debug console stating that it could not launch.
+You can check whether a device is compatible by using `PictureInPictureController.isSupported` which returns true or false. You may use
 this to show or hide the pip option in your application.
 
 **You must test this library on physical devices**. Due to issues in simulators outside of our control, you will see various
@@ -104,7 +104,7 @@ Picture-in-Picture has been around for quite a while first launching with iOS 9 
 10.15 in 2019 and tvOS 14 most recently in 2020. It provides users with the ability to view video content while using
 other applications, for example watching a YouTube video while reading tweets.
 
-Pipify expands on this feature by essentially creating a video stream from a SwiftUI view. We take a screenshot of your
+[Pipify](https://github.com/getsidetrack/swiftui-pipify.git) (original repository) expands on this feature by essentially creating a video stream from a SwiftUI view. We take a screenshot of your
 view anytime it updates and push this through a series of functions in Apple's AVKit. From these screenshots which we turn
 into a video stream, we can launch picture-in-picture mode.
 
@@ -122,3 +122,4 @@ ways of implementing sound into your application.
 
 Credit goes to Akihiro Urushihara with [UIPiPView](https://github.com/uakihir0/UIPiPView) which was the inspiration for building
 this SwiftUI component.
+Thanks also to James Sherlock and Jordi Bruin for [Pipify](https://github.com/getsidetrack/swiftui-pipify.git) for providing an implementation example.

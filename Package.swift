@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Pipify",
+    name: "PictureInPicture",
     platforms: [
         // Minimum OS version is currently limited by the ImageRenderer:
         //      https://developer.apple.com/documentation/swiftui/imagerenderer
@@ -18,9 +18,9 @@ let package = Package(
         .macCatalyst("16.0.0"),
     ],
     products: [
-        .library(name: "Pipify", targets: ["Pipify"]),
+        .library(name: "PictureInPicture", targets: ["PictureInPicture"]),
     ],
     targets: [
-        .target(name: "Pipify", path: "Sources"),
+        .target(name: "PictureInPicture", path: "Sources"),
     ]
 )

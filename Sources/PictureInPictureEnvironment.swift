@@ -8,8 +8,7 @@ import AVKit
 import Combine
 import os.log
 
-public final class PipifyController: NSObject, ObservableObject, AVPictureInPictureControllerDelegate,
-                                       AVPictureInPictureSampleBufferPlaybackDelegate {
+public final class PictureInPictureEnvironment: NSObject, ObservableObject {
     
     public static var isSupported: Bool {
         AVPictureInPictureController.isPictureInPictureSupported()
@@ -25,21 +24,21 @@ public final class PipifyController: NSObject, ObservableObject, AVPictureInPict
         didSet {
             // the pip controller is setup by the time the skip modifier changes this value
             // as such we update the pip controller after the fact
-            pipController?.requiresLinearPlayback = onSkip == nil
-            pipController?.invalidatePlaybackState()
+            controller?.requiresLinearPlayback = onSkip == nil
+            controller?.invalidatePlaybackState()
         }
     }
     
     internal var progress: Double = 1 {
         didSet {
-            pipController?.invalidatePlaybackState()
+            controller?.invalidatePlaybackState()
         }
     }
     
     internal let bufferLayer = AVSampleBufferDisplayLayer()
-    private var pipController: AVPictureInPictureController?
+    private var controller: AVPictureInPictureController?
     private var rendererSubscriptions = Set<AnyCancellable>()
-    private var pipPossibleObservation: NSKeyValueObservation?
+    private var isPossibleSubscribe: AnyCancellable?
     
     /// Updates (if necessary) the iOS audio session.
     ///
@@ -64,24 +63,6 @@ public final class PipifyController: NSObject, ObservableObject, AVPictureInPict
         // the audio session must be setup before the pip controller is created
         Self.setupAudioSession()
         setupController()
-    }
-    
-    private func setupController() {
-        logger.info("creating pip controller")
-        
-        bufferLayer.frame.size = .init(width: 300, height: 100)
-        bufferLayer.videoGravity = .resizeAspect
-        
-        pipController = AVPictureInPictureController(contentSource: .init(
-            sampleBufferDisplayLayer: bufferLayer,
-            playbackDelegate: self
-        ))
-        
-        // Combined with a certain time range this makes it so the skip buttons are not visible / interactable.
-        // if an `onSkip` closure is provied then we don't do this
-        pipController?.requiresLinearPlayback = onSkip == nil
-        
-        pipController?.delegate = self
     }
     
     @MainActor func setView(_ view: some View, maximumUpdatesPerSecond: Double = 30) {
@@ -123,14 +104,13 @@ public final class PipifyController: NSObject, ObservableObject, AVPictureInPict
     }
     
     // MARK: - Lifecycle
-    
     internal func start() {
-        guard let pipController else {
+        guard let controller else {
             logger.warning("could not start: no controller")
             return
         }
         
-        guard pipController.isPictureInPictureActive == false else {
+        guard controller.isPictureInPictureActive == false else {
             logger.warning("could not start: already active")
             return
         }
@@ -141,43 +121,62 @@ public final class PipifyController: NSObject, ObservableObject, AVPictureInPict
         #endif
         
         // force the timestamp to update
-        pipController.invalidatePlaybackState()
+        controller.invalidatePlaybackState()
         
-        if pipController.isPictureInPicturePossible {
+        if controller.isPictureInPicturePossible {
             logger.info("starting picture in picture")
-            pipController.startPictureInPicture()
+            controller.startPictureInPicture()
         } else {
             logger.info("waiting for pip to be possible")
             
             // not currently possible, so wait until it is.
-            let keyPath = \AVPictureInPictureController.isPictureInPicturePossible
-            pipPossibleObservation = pipController.observe(keyPath, options: [ .new ]) { [weak self] controller, change in
-                if change.newValue ?? false {
+            isPossibleSubscribe = controller.publisher(for: \.isPictureInPicturePossible)
+                .first { $0 }
+                .sink { [weak self] _ in
                     logger.info("starting picture in picture")
                     controller.startPictureInPicture()
-                    self?.pipPossibleObservation = nil
+                    self?.isPossibleSubscribe = nil
                 }
-            }
         }
     }
     
     internal func stop() {
-        guard let pipController else {
+        guard let controller else {
             logger.warning("could not stop: no controller")
             return
         }
         
         logger.info("stopping picture in picture")
-        pipController.stopPictureInPicture()
+        controller.stopPictureInPicture()
         
         #if !os(macOS)
         logger.info("deactivating audio session")
         try? AVAudioSession.sharedInstance().setActive(false)
         #endif
     }
-    
-    // MARK: - AVPictureInPictureControllerDelegate
+}
 
+private extension PictureInPictureEnvironment {
+    func setupController() {
+        logger.info("creating pip controller")
+        
+        bufferLayer.frame.size = .init(width: 300, height: 100)
+        bufferLayer.videoGravity = .resizeAspect
+        
+        controller = AVPictureInPictureController(contentSource: .init(
+            sampleBufferDisplayLayer: bufferLayer,
+            playbackDelegate: self
+        ))
+        
+        // Combined with a certain time range this makes it so the skip buttons are not visible / interactable.
+        // if an `onSkip` closure is provied then we don't do this
+        controller?.requiresLinearPlayback = onSkip == nil
+        
+        controller?.delegate = self
+    }
+}
+
+extension PictureInPictureEnvironment: AVPictureInPictureControllerDelegate {
     public func pictureInPictureControllerDidStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
         logger.info("didStart")
     }
@@ -188,7 +187,7 @@ public final class PipifyController: NSObject, ObservableObject, AVPictureInPict
     }
     
     public func pictureInPictureControllerShouldProhibitBackgroundAudioPlayback(_ pictureInPictureController: AVPictureInPictureController) -> Bool {
-        // We do not support audio through the pipify controller, as such we will allow other background audio to
+        // We do not support audio through the picture-in-picture controller, as such we will allow other background audio to
         // continue playing
         return false
     }
@@ -206,9 +205,9 @@ public final class PipifyController: NSObject, ObservableObject, AVPictureInPict
         enabled = false
         completionHandler(true)
     }
-    
-    // MARK: - AVPictureInPictureSampleBufferPlaybackDelegate
-    
+}
+
+extension PictureInPictureEnvironment: AVPictureInPictureSampleBufferPlaybackDelegate {
     public func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, setPlaying playing: Bool) {
         if isPlayPauseEnabled {
             DispatchQueue.main.async {
@@ -268,4 +267,4 @@ public final class PipifyController: NSObject, ObservableObject, AVPictureInPict
     }
 }
 
-let logger = Logger(subsystem: "com.getsidetrack.pipify", category: "Pipify")
+let logger = Logger(subsystem: "com.getsidetrack.pipify", category: "PictureInPicture")
